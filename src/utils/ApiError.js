@@ -12,6 +12,7 @@ class APIError extends Error {
         this.success=false
         this.errors=errors
 
+        // WHere exactly error occured
         if(statck){
             this.stack= statck
         }else {
