@@ -10,7 +10,7 @@ class APIError extends Error {
         this.data=null
         this.message=message
         this.success=false
-        this.errors=errors
+        this.error=error
 
         // WHere exactly error occured
         if(stack){

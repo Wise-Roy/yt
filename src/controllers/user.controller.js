@@ -22,7 +22,7 @@ const registerUser = asyncHandler(async(req,res)=> {
         throw new APIError(400,"All Fields are required");
     }
 
-    const existedUser = User.findOne({
+    const existedUser = await User.findOne({
         $or: [{username},{email}]
     })
     if(existedUser){
@@ -38,7 +38,7 @@ const registerUser = asyncHandler(async(req,res)=> {
     const coverImage = await uploadOnCloudinary(coverImageLocalPath);
     if(!avatar)throw new APIError(400, "Avatar image Not found");
 
-    const user = User.create({
+    const user = await User.create({
         fullname,
         avatar: avatar.url,
         coverImage: coverImage?.url || "",
