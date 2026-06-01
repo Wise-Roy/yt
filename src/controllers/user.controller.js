@@ -5,6 +5,21 @@ import {User} from "../models/user.model.js"
 import{uploadOnCloudinary} from "../utils/fileUpload.js"
 
 
+const generateAccessRefreshToken=async(userId)=> {
+    try{
+        const user = await User.findById(userId);
+        const accessToken = user.generateAccessToken();
+        const refreshToken = user.generateRefreshToken();
+
+        user.refreshToken = refreshToken;
+        user.save({validateBeforeSave: false});
+
+        return { accessToken, refreshToken };
+    } catch(err){
+        throw new APIError(500,err);
+    }
+}
+
 const registerUser = asyncHandler(async(req,res)=> {
     // get user details from frontend
     // validation
@@ -58,4 +73,60 @@ const registerUser = asyncHandler(async(req,res)=> {
 
 })
 
-export {registerUser}
+const loginUser = asyncHandler(async(req,res)=> {
+    // req , data extract
+    // check if data exist
+    // check if user exist
+    // check if password is correct
+    // generate refresh and access token
+
+    const {email,username, password} = req.body;
+    if(!username || !password || !email) {throw new APIError(400,"Credentials Required")};
+    const existedUser = await User.findOne(
+        {$or: [{username},{email}]}
+    );
+    if(!existedUser) { throw new APIError(400,"User does not exist")}
+    const checkPassword = existedUser.isPasswordCorrect(password);
+    if(!checkPassword){
+        throw new APIError(401, "Invalid Username or password");
+    }
+    const {refreshToken, accessToken} = await generateAccessRefreshToken(user._id);
+
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
+
+    return res.status(200).cookie("accessToken",accessToken,options)
+    .cookie("refreshToken",refreshToken,options).json(
+        new ApiResponse(
+            200,
+            {user: accessToken, refreshToken},
+            "User LogedIn successfully"
+        )
+    );
+});
+
+const logoutUser = asyncHandler(async(req,res)=> {
+    User.findByIdAndUpdate(req.user._id, {
+        $set: {
+            refreshToken : undefined
+        },
+        
+    },
+{
+    new: true
+});
+
+const options = {
+  httpOnly: true,
+  secure: true,
+};
+
+return res.status(200)
+.clearCookie("accessToken",options)
+.clearCookie("refreshToken", options)
+.json(new ApiResponse(200, {},"User Logged Out"));
+})
+
+export { registerUser, loginUser, logoutUser };
