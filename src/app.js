@@ -15,7 +15,10 @@ app.use(cookieParser())
 
 
 import userRouter from "./routes/user.routes.js"
+import { ErrorLog } from './middlewares/auth.middleware.js';
 
 app.use("/api/v1/users",userRouter)
+
+app.use(ErrorLog)
 
 export {app};
