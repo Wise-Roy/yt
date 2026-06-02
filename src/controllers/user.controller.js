@@ -3,6 +3,7 @@ import { APIError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/fileUpload.js";
+import { deleteLocalFile } from "../utils/fileRemove.js";
 
 const generateAccessRefreshToken = async (userId) => {
   try {
@@ -238,7 +239,9 @@ const updateUserAvatar = asyncHandler(async (req, res, next) => {
     },
   }).select("-password");
 
-  return res.status(200).json(200, user, "Avatar updated successfully");
+  deleteLocalFile(avatarPath);
+
+  return res.status(200).json(new ApiResponse(200, user, "Avatar updated successfully"));
 });
 
 const updateUserCover = asyncHandler(async (req, res, next) => {
@@ -258,7 +261,9 @@ const updateUserCover = asyncHandler(async (req, res, next) => {
     },
   }).select("-password");
 
-  return res.status(200).json(200, user, "Cover updated successfully");
+  deleteLocalFile(coverPath)
+
+  return res.status(200).json(new ApiResponse( 200, user, "Cover updated successfully"));
 });
 
 export {
