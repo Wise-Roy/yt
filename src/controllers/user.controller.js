@@ -342,7 +342,9 @@ const  getUserChannelProfile = asyncHandler(async(req,res,next)=> {
 
 const getWatchHistory= asyncHandler(async(req,res,next)=> {
   const user = User.aggregate([{
-    $match: mongoose.Types.ObjectId(req.user._id)
+    $match: {
+      _id : new mongoose.Types.ObjectId(req.user._id)
+    }
   },
   {
     $lookup: {
@@ -352,7 +354,8 @@ const getWatchHistory= asyncHandler(async(req,res,next)=> {
       as: "watchHistory",
       pipeline : [
         {
-          from: "users",
+          $lookup: 
+          {from: "users",
           localField:"owner",
           foreignField:"_id",
           as: "owner",
@@ -366,10 +369,12 @@ const getWatchHistory= asyncHandler(async(req,res,next)=> {
             },
             {
                 $addFields:{
+                  owner: {
                   $first:"$owner"
+                  }
                 } 
             }
-          ]
+          ]}
         }
       ]
     }
